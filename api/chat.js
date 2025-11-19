@@ -13,7 +13,7 @@ export default async function handler(req) {
 
     const { messages } = await req.json();
 
-    const apiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    const apiRes = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -21,7 +21,7 @@ export default async function handler(req) {
       },
       body: JSON.stringify({
         model: "gpt-5.1",
-        messages,
+        input: messages.map(m => `${m.role}: ${m.content}`).join("\n"),
       }),
     });
 
@@ -29,10 +29,11 @@ export default async function handler(req) {
 
     return new Response(
       JSON.stringify({
-        reply: data.choices?.[0]?.message?.content || "No reply from model",
+        reply: data.output_text || "No reply from model",
       }),
       { status: 200 }
     );
+
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),
